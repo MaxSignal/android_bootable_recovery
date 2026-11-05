@@ -318,6 +318,12 @@ int setup_install_mounts() {
 
     if (entry.mount_point == "/tmp" || entry.mount_point == "/cache") {
       if (ensure_path_mounted(entry.mount_point) != 0) {
+        // A device installing for the first time may not have its cache
+        // partition yet (the package creates it); /cache is only used for logs.
+        if (entry.mount_point == "/cache") {
+          LOG(WARNING) << "Failed to mount /cache, continuing without it";
+          continue;
+        }
         LOG(ERROR) << "Failed to mount " << entry.mount_point;
         return -1;
       }
